@@ -4,50 +4,65 @@ import (
 	"bufio"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"os"
+	"time"
 )
-type FileManager struct{
-	InputFilePath string
+
+type FileManager struct {
+	InputFilePath  string
 	OutputFilePath string
 }
 
-func (fm FileManager) ReadLines()([]string, error) {
+func (fm FileManager) ReadLines() ([]string, error) {
 	file, err := os.Open(fm.InputFilePath)
+
 	if err != nil {
-		fmt.Println(err)
-		file.Close()
-		return nil, errors.New("File opening failed")
+		return nil, errors.New("Failed to open file.")
 	}
+
 	scanner := bufio.NewScanner(file)
+
 	var lines []string
+
 	for scanner.Scan() {
 		lines = append(lines, scanner.Text())
 	}
+
 	err = scanner.Err()
+
 	if err != nil {
-		fmt.Println(err)
 		file.Close()
-		return nil, errors.New("Reading the file content failed")
+		return nil, errors.New("Failed to read line in file.")
 	}
+
 	file.Close()
 	return lines, nil
 }
-func (fm FileManager) WriteResult(path string, data any)error{
+
+func (fm FileManager) WriteResult(data interface{}) error {
 	file, err := os.Create(fm.OutputFilePath)
-	if err!=nil{
-		return errors.New("Failed to create file")
+
+	if err != nil {
+		return errors.New("Failed to create file.")
 	}
+
+	time.Sleep(3 * time.Second)
+
 	encoder := json.NewEncoder(file)
 	err = encoder.Encode(data)
+
 	if err != nil {
-		return errors.New("Failed to convert to JSON")
+		file.Close()
+		return errors.New("Faild to convert data to JSON.")
 	}
+
 	file.Close()
 	return nil
 }
-func New (inputPath, outputPath string) FileManager{
+
+func New(inputPath, outputPath string) FileManager {
 	return FileManager{
-		inputPath, outputPath,
+		InputFilePath:  inputPath,
+		OutputFilePath: outputPath,
 	}
 }
